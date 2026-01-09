@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { userColumns, useUserDialog, setEditDialogState, type User } from './userTable';
+import { userColumns, useUserDialog, setEditDialogState, setRefreshFunction, type User } from './userTable';
 import { DataTable } from '../../components/customUi/data-table';
 import { Button } from '../../components/ui/button';
 import {
@@ -24,11 +24,6 @@ export default function UserPage() {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const { selectedUser, dialogOpen, setDialogOpen } = useUserDialog();
 
-  // Set edit dialog state functions
-  useEffect(() => {
-    setEditDialogState(setEditUser, setEditDialogOpen);
-  }, []);
-
   const refreshUsers = async () => {
     try {
       setLoading(true);
@@ -46,6 +41,12 @@ export default function UserPage() {
       setLoading(false);
     }
   };
+
+  // Set edit dialog state functions and refresh function
+  useEffect(() => {
+    setEditDialogState(setEditUser, setEditDialogOpen);
+    setRefreshFunction(refreshUsers);
+  }, []);
 
   useEffect(() => {
     refreshUsers();

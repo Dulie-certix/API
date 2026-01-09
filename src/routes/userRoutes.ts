@@ -48,4 +48,19 @@ router.patch("/:id", async (req: Request, res: Response) => {
   }
 });
 
+router.delete("/:id", async (req: Request, res: Response) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({ error: "Database not connected" });
+    }
+    const user = await User.findByIdAndDelete(req.params.id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    res.json({ message: "User deleted successfully" });
+  } catch (error) {
+    res.status(400).json({ error: error instanceof Error ? error.message : 'Unknown error' });
+  }
+});
+
 export default router;

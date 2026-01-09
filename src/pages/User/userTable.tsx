@@ -13,6 +13,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { deleteUser } from '@/apis/userService';
 
 export type User = {
   _id: string;
@@ -25,7 +36,7 @@ export type User = {
   phone: string;
   username: string;
   password: string;
-  dob?: Date;
+
 };
 
 // Dialog state management
@@ -33,6 +44,7 @@ let setSelectedUser: (user: User | null) => void;
 let setDialogOpen: (open: boolean) => void;
 let setEditUser: (user: User | null) => void;
 let setEditDialogOpen: (open: boolean) => void;
+let refreshUsers: () => void;
 
 export function useUserDialog() {
   const [selectedUser, setUser] = useState<User | null>(null);
@@ -47,6 +59,10 @@ export function useUserDialog() {
 export function setEditDialogState(editUserSetter: (user: User | null) => void, editDialogSetter: (open: boolean) => void) {
   setEditUser = editUserSetter;
   setEditDialogOpen = editDialogSetter;
+}
+
+export function setRefreshFunction(refreshFn: () => void) {
+  refreshUsers = refreshFn;
 }
 
 export const userColumns: ColumnDef<User>[] = [
@@ -136,42 +152,93 @@ export const userColumns: ColumnDef<User>[] = [
     header: 'Actions',
     cell: ({ row }) => {
       const user = row.original;
+      const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+      const [isDeleting, setIsDeleting] = useState(false);
+
+      const handleDelete = async () => {
+        setIsDeleting(true);
+        const result = await deleteUser(user._id);
+        if (result.success) {
+          refreshUsers();
+          setDeleteDialogOpen(false);
+        }
+        setIsDeleting(false);
+      };
 
       return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem
-              onClick={() => {
-                setSelectedUser(user);
-                setDialogOpen(true);
-              }}
-            >
-              <Eye className="mr-2 h-4 w-4" />
-              View
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => {
-                setEditUser(user);
-                setEditDialogOpen(true);
-              }}
-            >
-              <Edit className="mr-2 h-4 w-4" />
-              Update
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => console.log('Delete user:', user)}
-              className="text-red-600"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={() => {
+                  setSelectedUser(user);
+                  setDialogOpen(true);
+                }}
+              >
+                <Eye className="mr-2 h-4 w-4" />
+                View
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  setEditUser(user);
+                  setEditDialogOpen(true);
+                }}
+              >
+                <Edit className="mr-2 h-4 w-4" />
+                Update
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setDeleteDialogOpen(true)}
+                className="text-red-600"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <AlertDialog
+            open={deleteDialogOpen}
+            onOpenChange={setDeleteDialogOpen}
+          >
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete User</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to delete {user.firstName}{' '}
+                  {user.lastName}? This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <div className="my-4 rounded-lg border bg-gray-50 p-4">
+                <div className="flex items-center space-x-4">
+                  <div>
+                    <h4 className="font-semibold">
+                      {user.firstName} {user.lastName}
+                    </h4>
+                    <p className="text-sm text-gray-600">{user.email}</p>
+                    <p className="text-sm text-gray-600">{user.phone}</p>
+                    <p className="text-sm text-gray-600">@{user.username}</p>
+                  </div>
+                </div>
+              </div>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  className="bg-red-600 hover:bg-red-700"
+                >
+                  {isDeleting ? 'Deleting...' : 'Delete'}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </>
       );
     },
   },
