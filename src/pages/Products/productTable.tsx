@@ -30,7 +30,7 @@ export type Product = {
   thumbnail: string;
 };
 
-export const productColumns: ColumnDef<Product>[] = [
+export const createProductColumns = (onViewDetails: (product: Product) => void): ColumnDef<Product>[] => [
   {
     id: "select",
     header: ({ table }) => (
@@ -122,6 +122,7 @@ export const productColumns: ColumnDef<Product>[] = [
   },
   {
     id: "actions",
+    header: () => <div className="text-left">Action</div>,
     cell: ({ row }) => {
       const product = row.original;
 
@@ -136,13 +137,16 @@ export const productColumns: ColumnDef<Product>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(product.id.toString())}
+              onClick={() =>
+                navigator.clipboard.writeText(product.id.toString())
+              }
             >
               Copy product ID
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>View details</DropdownMenuItem>
-            <DropdownMenuItem>Edit product</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onViewDetails(product)}>
+              View details
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );

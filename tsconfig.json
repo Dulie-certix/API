@@ -13,9 +13,15 @@
     "paths": {
       "@/*": [
         "./src/*"
-      ]
+      ],
+      
     },
+    "target": "ES2020",
+    "module": "ESNext",
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "strict": true,
+    "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "strict": true
   }
 }

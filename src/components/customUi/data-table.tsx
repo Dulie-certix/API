@@ -34,16 +34,20 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { DataTablePagination } from "@/components/customUi/data-table-pagination";
+import { DataTablePagination } from "@/components/customUi/pagination";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
+  filterColumn?: string
+  filterPlaceholder?: string
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  filterColumn = "title",
+  filterPlaceholder = "Filter..."
 }: DataTableProps<TData, TValue>) {
 const [sorting, setSorting] = React.useState<SortingState>([]);
 const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -76,10 +80,10 @@ const table = useReactTable({
     <div className="space-y-4">
       <div className="flex items-center py-4">
         <Input
-          placeholder="Filter products..."
-          value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
+          placeholder={filterPlaceholder}
+          value={(table.getColumn(filterColumn)?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("title")?.setFilterValue(event.target.value)
+            table.getColumn(filterColumn)?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
