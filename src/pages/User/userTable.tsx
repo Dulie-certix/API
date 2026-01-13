@@ -243,3 +243,5 @@ export const userColumns: ColumnDef<User>[] = [
     },
   },
 ];
+
+export default userColumns;

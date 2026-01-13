@@ -53,7 +53,8 @@ const [sorting, setSorting] = React.useState<SortingState>([]);
 const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   )
-  const [columnVisibility, setColumnVisibility] = 
+const [globalFilter, setGlobalFilter] = React.useState("");
+const [columnVisibility, setColumnVisibility] = 
   React.useState<VisibilityState>({});
 const [rowSelection, setRowSelection] = React.useState({});
 
@@ -68,23 +69,37 @@ const table = useReactTable({
   getFilteredRowModel: getFilteredRowModel(),
   onColumnVisibilityChange: setColumnVisibility,
   onRowSelectionChange: setRowSelection,
+  onGlobalFilterChange: setGlobalFilter,
+  globalFilterFn: (row, columnId, filterValue) => {
+    const searchValue = filterValue.toLowerCase();
+    const title = row.getValue("title") as string;
+    const name = (row.original as any)?.name as string;
+    const category = row.getValue("category") as string;
+    const brand = row.getValue("brand") as string;
+    
+    return (
+      (title && title.toLowerCase().includes(searchValue)) ||
+      (name && name.toLowerCase().includes(searchValue)) ||
+      (category && category.toLowerCase().includes(searchValue)) ||
+      (brand && brand.toLowerCase().includes(searchValue))
+    );
+  },
   state: {
     sorting,
     columnFilters,
     columnVisibility,
     rowSelection,
+    globalFilter,
   },
 });
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center py-4">
+      <div className="flex items-center py-4 gap-4">
         <Input
-          placeholder={filterPlaceholder}
-          value={(table.getColumn(filterColumn)?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn(filterColumn)?.setFilterValue(event.target.value)
-          }
+          placeholder="Search products by name, category, or brand..."
+          value={globalFilter ?? ""}
+          onChange={(event) => setGlobalFilter(event.target.value)}
           className="max-w-sm"
         />
         <DropdownMenu>
